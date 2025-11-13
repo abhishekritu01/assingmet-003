@@ -1,0 +1,1213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Product Importer - Acme Inc.</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            opacity: 0.9;
+            font-size: 1.1em;
+        }
+
+        .tabs {
+            display: flex;
+            background: #f5f5f5;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        .tab {
+            flex: 1;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            background: #f5f5f5;
+            border: none;
+            font-size: 1.1em;
+            font-weight: 600;
+            color: #666;
+            transition: all 0.3s;
+        }
+
+        .tab:hover {
+            background: #e8e8e8;
+        }
+
+        .tab.active {
+            background: white;
+            color: #667eea;
+            border-bottom: 3px solid #667eea;
+        }
+
+        .tab-content {
+            display: none;
+            padding: 30px;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .upload-area {
+            border: 3px dashed #667eea;
+            border-radius: 8px;
+            padding: 40px;
+            text-align: center;
+            background: #f9f9ff;
+            margin-bottom: 20px;
+        }
+
+        .upload-area.dragover {
+            background: #e8e8ff;
+            border-color: #764ba2;
+        }
+
+        .upload-area input[type="file"] {
+            display: none;
+        }
+
+        .upload-btn {
+            background: #667eea;
+            color: white;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 6px;
+            font-size: 1em;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .upload-btn:hover {
+            background: #5568d3;
+        }
+
+        .progress-container {
+            margin-top: 20px;
+            display: none;
+        }
+
+        .progress-container.active {
+            display: block;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 30px;
+            background: #e0e0e0;
+            border-radius: 15px;
+            overflow: hidden;
+            margin-bottom: 10px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            width: 0%;
+            transition: width 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+
+        .progress-message {
+            text-align: center;
+            color: #666;
+            font-size: 0.9em;
+        }
+
+        .error-list {
+            background: #ffe8e8;
+            border: 1px solid #ff6b6b;
+            border-radius: 6px;
+            padding: 15px;
+            margin-top: 15px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .error-item {
+            color: #d63031;
+            padding: 5px 0;
+            font-size: 0.9em;
+        }
+
+        .filters {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .filter-group label {
+            margin-bottom: 5px;
+            color: #666;
+            font-weight: 600;
+        }
+
+        .filter-group input,
+        .filter-group select {
+            padding: 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 1em;
+        }
+
+        .filter-group input:focus,
+        .filter-group select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            font-size: 1em;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 600;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #5568d3;
+        }
+
+        .btn-danger {
+            background: #e74c3c;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #c0392b;
+        }
+
+        .btn-success {
+            background: #27ae60;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #229954;
+        }
+
+        .btn-secondary {
+            background: #95a5a6;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #7f8c8d;
+        }
+
+        .table-container {
+            overflow-x: auto;
+            margin-top: 20px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        th {
+            background: #f5f5f5;
+            font-weight: 600;
+            color: #333;
+        }
+
+        tr:hover {
+            background: #f9f9f9;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 0.85em;
+            font-weight: 600;
+        }
+
+        .badge-active {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .badge-inactive {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .pagination button {
+            padding: 8px 16px;
+            border: 1px solid #e0e0e0;
+            background: white;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+        .pagination button:hover:not(:disabled) {
+            background: #f5f5f5;
+        }
+
+        .pagination button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            max-width: 500px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            font-size: 1.5em;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: #666;
+            font-weight: 600;
+        }
+
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 1em;
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+            margin-top: 20px;
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 20px;
+            border-radius: 6px;
+            color: white;
+            font-weight: 600;
+            z-index: 2000;
+            animation: slideIn 0.3s;
+        }
+
+        .notification.success {
+            background: #27ae60;
+        }
+
+        .notification.error {
+            background: #e74c3c;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(400px);
+            }
+            to {
+                transform: translateX(0);
+            }
+        }
+
+        .actions {
+            display: flex;
+            gap: 5px;
+        }
+
+        .actions button {
+            padding: 5px 10px;
+            font-size: 0.85em;
+        }
+
+        .webhook-item {
+            background: #f9f9f9;
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+            border-left: 4px solid #667eea;
+        }
+
+        .webhook-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .webhook-url {
+            font-weight: 600;
+            color: #333;
+            word-break: break-all;
+        }
+
+        .webhook-meta {
+            display: flex;
+            gap: 15px;
+            color: #666;
+            font-size: 0.9em;
+        }
+
+        .webhook-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 24px;
+        }
+
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: 0.4s;
+            border-radius: 24px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: 0.4s;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider {
+            background-color: #667eea;
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(26px);
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📦 Product Importer</h1>
+            <p>Acme Inc. - Scalable Product Management System</p>
+        </div>
+
+        <div class="tabs">
+            <button class="tab active" onclick="switchTab('upload')">📤 Upload CSV</button>
+            <button class="tab" onclick="switchTab('products')">📋 Products</button>
+            <button class="tab" onclick="switchTab('webhooks')">🔗 Webhooks</button>
+        </div>
+
+        <!-- Upload Tab -->
+        <div id="upload-tab" class="tab-content active">
+            <h2>Upload Product CSV</h2>
+            <p style="color: #666; margin-bottom: 20px;">
+                Upload a CSV file with up to 500,000 product records. The file should have columns: name, sku, description
+            </p>
+            
+            <div class="upload-area" id="upload-area">
+                <p style="font-size: 1.2em; margin-bottom: 20px;">📁 Drag & Drop your CSV file here</p>
+                <p style="color: #666; margin-bottom: 20px;">or</p>
+                <button class="upload-btn" onclick="document.getElementById('file-input').click()">
+                    Choose File
+                </button>
+                <input type="file" id="file-input" accept=".csv" onchange="handleFileSelect(event)">
+            </div>
+
+            <div class="progress-container" id="progress-container">
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progress-fill">0%</div>
+                </div>
+                <div class="progress-message" id="progress-message">Preparing upload...</div>
+                <div class="error-list" id="error-list" style="display: none;"></div>
+            </div>
+        </div>
+
+        <!-- Products Tab -->
+        <div id="products-tab" class="tab-content">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h2>Product Management</h2>
+                <div>
+                    <button class="btn btn-primary" onclick="openProductModal()">+ Add Product</button>
+                    <button class="btn btn-danger" onclick="confirmBulkDelete()">🗑️ Delete All</button>
+                </div>
+            </div>
+
+            <div class="filters">
+                <div class="filter-group">
+                    <label>SKU</label>
+                    <input type="text" id="filter-sku" placeholder="Search SKU..." onkeyup="debounce(loadProducts, 500)()">
+                </div>
+                <div class="filter-group">
+                    <label>Name</label>
+                    <input type="text" id="filter-name" placeholder="Search name..." onkeyup="debounce(loadProducts, 500)()">
+                </div>
+                <div class="filter-group">
+                    <label>Status</label>
+                    <select id="filter-active" onchange="loadProducts()">
+                        <option value="">All</option>
+                        <option value="true">Active</option>
+                        <option value="false">Inactive</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>Description</label>
+                    <input type="text" id="filter-description" placeholder="Search description..." onkeyup="debounce(loadProducts, 500)()">
+                </div>
+            </div>
+
+            <div class="table-container">
+                <div id="products-loading" class="loading" style="display: none;">
+                    <div class="spinner"></div>
+                    <p>Loading products...</p>
+                </div>
+                <table id="products-table" style="display: none;">
+                    <thead>
+                        <tr>
+                            <th>SKU</th>
+                            <th>Name</th>
+                            <th>Description</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="products-tbody"></tbody>
+                </table>
+            </div>
+
+            <div class="pagination" id="pagination"></div>
+        </div>
+
+        <!-- Webhooks Tab -->
+        <div id="webhooks-tab" class="tab-content">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h2>Webhook Management</h2>
+                <button class="btn btn-primary" onclick="openWebhookModal()">+ Add Webhook</button>
+            </div>
+
+            <div id="webhooks-list">
+                <div class="loading">
+                    <div class="spinner"></div>
+                    <p>Loading webhooks...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Product Modal -->
+    <div id="product-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header" id="product-modal-title">Add Product</div>
+            <form id="product-form" onsubmit="saveProduct(event)">
+                <input type="hidden" id="product-id">
+                <div class="form-group">
+                    <label>SKU *</label>
+                    <input type="text" id="product-sku" required>
+                </div>
+                <div class="form-group">
+                    <label>Name *</label>
+                    <input type="text" id="product-name" required>
+                </div>
+                <div class="form-group">
+                    <label>Description</label>
+                    <textarea id="product-description"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Active</label>
+                    <select id="product-active">
+                        <option value="true">Active</option>
+                        <option value="false">Inactive</option>
+                    </select>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" onclick="closeProductModal()">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Webhook Modal -->
+    <div id="webhook-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header" id="webhook-modal-title">Add Webhook</div>
+            <form id="webhook-form" onsubmit="saveWebhook(event)">
+                <input type="hidden" id="webhook-id">
+                <div class="form-group">
+                    <label>URL *</label>
+                    <input type="url" id="webhook-url" required>
+                </div>
+                <div class="form-group">
+                    <label>Event Type *</label>
+                    <select id="webhook-event-type" required>
+                        <option value="product.created">Product Created</option>
+                        <option value="product.updated">Product Updated</option>
+                        <option value="product.deleted">Product Deleted</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Enabled</label>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="webhook-enabled" checked>
+                        <span class="slider"></span>
+                    </label>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" onclick="closeWebhookModal()">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = '/api';
+        let currentPage = 1;
+        let currentTaskId = null;
+        let wsConnection = null;
+
+        // Tab switching
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+            
+            event.target.classList.add('active');
+            document.getElementById(`${tabName}-tab`).classList.add('active');
+            
+            if (tabName === 'products') {
+                loadProducts();
+            } else if (tabName === 'webhooks') {
+                loadWebhooks();
+            }
+        }
+
+        // File upload
+        const uploadArea = document.getElementById('upload-area');
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('dragover');
+        });
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            const file = e.dataTransfer.files[0];
+            if (file && file.name.endsWith('.csv')) {
+                uploadFile(file);
+            } else {
+                showNotification('Please upload a CSV file', 'error');
+            }
+        });
+
+        function handleFileSelect(event) {
+            const file = event.target.files[0];
+            if (file) {
+                uploadFile(file);
+            }
+        }
+
+        async function uploadFile(file) {
+            const formData = new FormData();
+            formData.append('file', file);
+
+            try {
+                const response = await fetch(`${API_BASE}/upload`, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (!response.ok) {
+                    throw new Error('Upload failed');
+                }
+
+                const data = await response.json();
+                currentTaskId = data.task_id;
+                
+                document.getElementById('progress-container').classList.add('active');
+                document.getElementById('error-list').style.display = 'none';
+                
+                // Connect to WebSocket for real-time updates
+                connectWebSocket(currentTaskId);
+                
+                // Also poll as fallback
+                pollProgress(currentTaskId);
+                
+            } catch (error) {
+                showNotification('Upload failed: ' + error.message, 'error');
+            }
+        }
+
+        function connectWebSocket(taskId) {
+            const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+            const wsUrl = `${protocol}//${window.location.host}/ws/progress/${taskId}`;
+            
+            wsConnection = new WebSocket(wsUrl);
+            
+            wsConnection.onmessage = (event) => {
+                const data = JSON.parse(event.data);
+                updateProgress(data);
+                
+                if (data.status === 'completed' || data.status === 'failed') {
+                    wsConnection.close();
+                    wsConnection = null;
+                }
+            };
+            
+            wsConnection.onerror = () => {
+                // Fallback to polling
+                pollProgress(taskId);
+            };
+        }
+
+        async function pollProgress(taskId) {
+            const interval = setInterval(async () => {
+                try {
+                    const response = await fetch(`${API_BASE}/upload/progress/${taskId}`);
+                    const data = await response.json();
+                    updateProgress(data);
+                    
+                    if (data.status === 'completed' || data.status === 'failed') {
+                        clearInterval(interval);
+                    }
+                } catch (error) {
+                    console.error('Error polling progress:', error);
+                }
+            }, 1000);
+        }
+
+        function updateProgress(data) {
+            const progress = (data.progress * 100).toFixed(1);
+            document.getElementById('progress-fill').style.width = `${progress}%`;
+            document.getElementById('progress-fill').textContent = `${progress}%`;
+            document.getElementById('progress-message').textContent = data.message || 'Processing...';
+            
+            if (data.errors && data.errors.length > 0) {
+                const errorList = document.getElementById('error-list');
+                errorList.style.display = 'block';
+                errorList.innerHTML = data.errors.map(e => 
+                    `<div class="error-item">${e}</div>`
+                ).join('');
+            }
+            
+            if (data.status === 'completed') {
+                showNotification('Upload completed successfully!', 'success');
+                setTimeout(() => {
+                    document.getElementById('progress-container').classList.remove('active');
+                    document.getElementById('file-input').value = '';
+                }, 3000);
+            } else if (data.status === 'failed') {
+                showNotification('Upload failed: ' + data.message, 'error');
+            }
+        }
+
+        // Products
+        async function loadProducts(page = 1) {
+            currentPage = page;
+            const params = new URLSearchParams({
+                skip: (page - 1) * 50,
+                limit: 50
+            });
+            
+            const sku = document.getElementById('filter-sku').value;
+            const name = document.getElementById('filter-name').value;
+            const active = document.getElementById('filter-active').value;
+            const description = document.getElementById('filter-description').value;
+            
+            if (sku) params.append('sku', sku);
+            if (name) params.append('name', name);
+            if (active) params.append('active', active);
+            if (description) params.append('description', description);
+            
+            document.getElementById('products-loading').style.display = 'block';
+            document.getElementById('products-table').style.display = 'none';
+            
+            try {
+                const response = await fetch(`${API_BASE}/products?${params}`);
+                const data = await response.json();
+                
+                document.getElementById('products-loading').style.display = 'none';
+                document.getElementById('products-table').style.display = 'table';
+                
+                const tbody = document.getElementById('products-tbody');
+                tbody.innerHTML = data.items.map(product => `
+                    <tr>
+                        <td>${product.sku}</td>
+                        <td>${product.name}</td>
+                        <td>${product.description || '-'}</td>
+                        <td><span class="badge ${product.active ? 'badge-active' : 'badge-inactive'}">
+                            ${product.active ? 'Active' : 'Inactive'}
+                        </span></td>
+                        <td>
+                            <div class="actions">
+                                <button class="btn btn-primary" onclick="editProduct('${product.id}')">Edit</button>
+                                <button class="btn btn-danger" onclick="deleteProduct('${product.id}')">Delete</button>
+                            </div>
+                        </td>
+                    </tr>
+                `).join('');
+                
+                // Pagination
+                const pagination = document.getElementById('pagination');
+                pagination.innerHTML = `
+                    <button onclick="loadProducts(${data.page - 1})" ${data.page <= 1 ? 'disabled' : ''}>Previous</button>
+                    <span>Page ${data.page} of ${data.total_pages || 1} (${data.total} total)</span>
+                    <button onclick="loadProducts(${data.page + 1})" ${data.page >= data.total_pages ? 'disabled' : ''}>Next</button>
+                `;
+            } catch (error) {
+                showNotification('Error loading products: ' + error.message, 'error');
+            }
+        }
+
+        function openProductModal(productId = null) {
+            document.getElementById('product-modal').classList.add('active');
+            document.getElementById('product-form').reset();
+            document.getElementById('product-id').value = '';
+            
+            if (productId) {
+                document.getElementById('product-modal-title').textContent = 'Edit Product';
+                fetch(`${API_BASE}/products/${productId}`)
+                    .then(r => r.json())
+                    .then(product => {
+                        document.getElementById('product-id').value = product.id;
+                        document.getElementById('product-sku').value = product.sku;
+                        document.getElementById('product-sku').disabled = true;
+                        document.getElementById('product-name').value = product.name;
+                        document.getElementById('product-description').value = product.description || '';
+                        document.getElementById('product-active').value = product.active.toString();
+                    });
+            } else {
+                document.getElementById('product-modal-title').textContent = 'Add Product';
+                document.getElementById('product-sku').disabled = false;
+            }
+        }
+
+        function closeProductModal() {
+            document.getElementById('product-modal').classList.remove('active');
+        }
+
+        async function saveProduct(event) {
+            event.preventDefault();
+            const id = document.getElementById('product-id').value;
+            const product = {
+                sku: document.getElementById('product-sku').value,
+                name: document.getElementById('product-name').value,
+                description: document.getElementById('product-description').value,
+                active: document.getElementById('product-active').value === 'true'
+            };
+            
+            try {
+                let response;
+                if (id) {
+                    const updateData = { ...product };
+                    delete updateData.sku; // SKU cannot be updated
+                    response = await fetch(`${API_BASE}/products/${id}`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(updateData)
+                    });
+                } else {
+                    response = await fetch(`${API_BASE}/products`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(product)
+                    });
+                }
+                
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.detail || 'Failed to save product');
+                }
+                
+                showNotification('Product saved successfully!', 'success');
+                closeProductModal();
+                loadProducts(currentPage);
+            } catch (error) {
+                showNotification('Error: ' + error.message, 'error');
+            }
+        }
+
+        async function editProduct(id) {
+            openProductModal(id);
+        }
+
+        async function deleteProduct(id) {
+            if (!confirm('Are you sure you want to delete this product?')) return;
+            
+            try {
+                const response = await fetch(`${API_BASE}/products/${id}`, { method: 'DELETE' });
+                if (response.ok) {
+                    showNotification('Product deleted successfully!', 'success');
+                    loadProducts(currentPage);
+                } else {
+                    throw new Error('Failed to delete product');
+                }
+            } catch (error) {
+                showNotification('Error: ' + error.message, 'error');
+            }
+        }
+
+        async function confirmBulkDelete() {
+            if (!confirm('Are you sure you want to delete ALL products? This cannot be undone!')) return;
+            
+            try {
+                const response = await fetch(`${API_BASE}/products`, { method: 'DELETE' });
+                const data = await response.json();
+                
+                showNotification('Bulk delete started. Processing...', 'success');
+                
+                // Poll for status
+                const interval = setInterval(async () => {
+                    const statusResponse = await fetch(`${API_BASE}/products/bulk-delete/status/${data.task_id}`);
+                    const status = await statusResponse.json();
+                    
+                    if (status.status === 'completed') {
+                        clearInterval(interval);
+                        showNotification('All products deleted successfully!', 'success');
+                        loadProducts(1);
+                    } else if (status.status === 'failed') {
+                        clearInterval(interval);
+                        showNotification('Bulk delete failed: ' + status.message, 'error');
+                    }
+                }, 1000);
+            } catch (error) {
+                showNotification('Error: ' + error.message, 'error');
+            }
+        }
+
+        // Webhooks
+        async function loadWebhooks() {
+            try {
+                const response = await fetch(`${API_BASE}/webhooks`);
+                const webhooks = await response.json();
+                
+                const list = document.getElementById('webhooks-list');
+                if (webhooks.length === 0) {
+                    list.innerHTML = '<p style="text-align: center; color: #666; padding: 40px;">No webhooks configured</p>';
+                    return;
+                }
+                
+                list.innerHTML = webhooks.map(webhook => `
+                    <div class="webhook-item">
+                        <div class="webhook-header">
+                            <div class="webhook-url">${webhook.url}</div>
+                            <label class="toggle-switch">
+                                <input type="checkbox" ${webhook.enabled ? 'checked' : ''} 
+                                    onchange="toggleWebhook('${webhook.id}', this.checked)">
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                        <div class="webhook-meta">
+                            <span><strong>Event:</strong> ${webhook.event_type}</span>
+                            <span><strong>Created:</strong> ${new Date(webhook.created_at).toLocaleDateString()}</span>
+                        </div>
+                        <div class="webhook-actions">
+                            <button class="btn btn-success" onclick="testWebhook('${webhook.id}')">Test</button>
+                            <button class="btn btn-primary" onclick="editWebhook('${webhook.id}')">Edit</button>
+                            <button class="btn btn-danger" onclick="deleteWebhook('${webhook.id}')">Delete</button>
+                        </div>
+                    </div>
+                `).join('');
+            } catch (error) {
+                showNotification('Error loading webhooks: ' + error.message, 'error');
+            }
+        }
+
+        function openWebhookModal(webhookId = null) {
+            document.getElementById('webhook-modal').classList.add('active');
+            document.getElementById('webhook-form').reset();
+            document.getElementById('webhook-id').value = '';
+            
+            if (webhookId) {
+                document.getElementById('webhook-modal-title').textContent = 'Edit Webhook';
+                fetch(`${API_BASE}/webhooks/${webhookId}`)
+                    .then(r => r.json())
+                    .then(webhook => {
+                        document.getElementById('webhook-id').value = webhook.id;
+                        document.getElementById('webhook-url').value = webhook.url;
+                        document.getElementById('webhook-event-type').value = webhook.event_type;
+                        document.getElementById('webhook-enabled').checked = webhook.enabled;
+                    });
+            } else {
+                document.getElementById('webhook-modal-title').textContent = 'Add Webhook';
+            }
+        }
+
+        function closeWebhookModal() {
+            document.getElementById('webhook-modal').classList.remove('active');
+        }
+
+        async function saveWebhook(event) {
+            event.preventDefault();
+            const id = document.getElementById('webhook-id').value;
+            const webhook = {
+                url: document.getElementById('webhook-url').value,
+                event_type: document.getElementById('webhook-event-type').value,
+                enabled: document.getElementById('webhook-enabled').checked
+            };
+            
+            try {
+                let response;
+                if (id) {
+                    response = await fetch(`${API_BASE}/webhooks/${id}`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(webhook)
+                    });
+                } else {
+                    response = await fetch(`${API_BASE}/webhooks`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(webhook)
+                    });
+                }
+                
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.detail || 'Failed to save webhook');
+                }
+                
+                showNotification('Webhook saved successfully!', 'success');
+                closeWebhookModal();
+                loadWebhooks();
+            } catch (error) {
+                showNotification('Error: ' + error.message, 'error');
+            }
+        }
+
+        async function toggleWebhook(id, enabled) {
+            try {
+                const response = await fetch(`${API_BASE}/webhooks/${id}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ enabled })
+                });
+                
+                if (response.ok) {
+                    showNotification(`Webhook ${enabled ? 'enabled' : 'disabled'}`, 'success');
+                } else {
+                    throw new Error('Failed to update webhook');
+                }
+            } catch (error) {
+                showNotification('Error: ' + error.message, 'error');
+                loadWebhooks(); // Reload to revert UI
+            }
+        }
+
+        async function testWebhook(id) {
+            try {
+                const response = await fetch(`${API_BASE}/webhooks/${id}/test`, { method: 'POST' });
+                const result = await response.json();
+                
+                if (result.success) {
+                    showNotification(
+                        `Webhook test successful! Status: ${result.status_code}, Time: ${result.response_time_ms.toFixed(2)}ms`,
+                        'success'
+                    );
+                } else {
+                    showNotification(`Webhook test failed: ${result.error || 'Unknown error'}`, 'error');
+                }
+            } catch (error) {
+                showNotification('Error testing webhook: ' + error.message, 'error');
+            }
+        }
+
+        async function editWebhook(id) {
+            openWebhookModal(id);
+        }
+
+        async function deleteWebhook(id) {
+            if (!confirm('Are you sure you want to delete this webhook?')) return;
+            
+            try {
+                const response = await fetch(`${API_BASE}/webhooks/${id}`, { method: 'DELETE' });
+                if (response.ok) {
+                    showNotification('Webhook deleted successfully!', 'success');
+                    loadWebhooks();
+                } else {
+                    throw new Error('Failed to delete webhook');
+                }
+            } catch (error) {
+                showNotification('Error: ' + error.message, 'error');
+            }
+        }
+
+        // Utility functions
+        function showNotification(message, type = 'success') {
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+            notification.textContent = message;
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.remove();
+            }, 3000);
+        }
+
+        function debounce(func, wait) {
+            let timeout;
+            return function executedFunction(...args) {
+                const later = () => {
+                    clearTimeout(timeout);
+                    func(...args);
+                };
+                clearTimeout(timeout);
+                timeout = setTimeout(later, wait);
+            };
+        }
+
+        // Load products on page load if on products tab
+        window.addEventListener('load', () => {
+            if (document.getElementById('products-tab').classList.contains('active')) {
+                loadProducts();
+            }
+        });
+    </script>
+</body>
+</html>
+
